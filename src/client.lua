@@ -1,4 +1,10 @@
 -- For support join my discord: https://discord.gg/Z9Mxu72zZ6
+local QBCore = exports['qbx-core']:GetCoreObject()
+local PlayerData = QBCore.Functions.GetPlayerData()
+local config = config
+local cashAmount = 0
+local bankAmount = 0
+
 
 local priorityText = ""
 local aopText = ""
@@ -9,8 +15,6 @@ local nearestPostal = {}
 local compass = ""
 local time = ""
 local hidden = false
-local cash = ""
-local bank = ""
 local postals = {}
 
 if config.enableSpeedometerMetric then
@@ -44,13 +48,13 @@ end
 
 function getHeading(heading)
     if ((heading >= 0 and heading < 45) or (heading >= 315 and heading < 360)) then
-        return "N" -- North
+        return "S" -- North
     elseif (heading >= 45 and heading < 135) then
-        return "W" -- West
+        return "J" -- West
     elseif (heading >= 135 and heading < 225) then
-        return "S" -- South
+        return "Z" -- South
     elseif (heading >= 225 and heading < 315) then
-        return "E" -- East
+        return "V" -- East
     else
         return " "
     end
@@ -69,49 +73,51 @@ function getTime()
 end
 
 
-if config.enableMoneyHud then
-    NDCore = exports["ND_Core"]:GetCoreObject()
+RegisterNetEvent("QBCore:Client:OnPlayerLoaded", function()
+    Wait(2000)
+    local hudSettings = GetResourceKvpString('hudSettings')
+    if hudSettings then loadSettings(json.decode(hudSettings)) end
+    PlayerData = QBCore.Functions.GetPlayerData()
+end)
 
-    AddEventHandler("playerSpawned", function()
-        local selectedCharacter = NDCore.Functions.GetSelectedCharacter()
-        if not selectedCharacter then return end
-        cash = selectedCharacter.cash
-        bank = selectedCharacter.bank
-    end)
+RegisterNetEvent("QBCore:Client:OnPlayerUnload", function()
+    PlayerData = {}
+end)
 
-    AddEventHandler("onResourceStart", function(resourceName)
-        if (GetCurrentResourceName() ~= resourceName) then
-        return
-        end
-        Wait(3000)
-        local selectedCharacter = NDCore.Functions.GetSelectedCharacter()
-        if not selectedCharacter then return end
-        cash = selectedCharacter.cash
-        bank = selectedCharacter.bank
-    end)
+RegisterNetEvent("QBCore:Player:SetPlayerData", function(val)
+    PlayerData = val
+end)
 
-    RegisterNetEvent("ND:setCharacter")
-    AddEventHandler("ND:setCharacter", function(character)
-        local selectedCharacter = character
-        if not selectedCharacter then return end
-        cash = selectedCharacter.cash
-        bank = selectedCharacter.bank
-    end)
-    
-    RegisterNetEvent("ND:updateCharacter")
-    AddEventHandler("ND:updateCharacter", function(character)
-        local selectedCharacter = character
-        if not selectedCharacter then return end
-        cash = selectedCharacter.cash
-        bank = selectedCharacter.bank
-    end)
+-- Money HUD
 
-    RegisterNetEvent("ND:updateMoney")
-    AddEventHandler("ND:updateMoney", function(updatedCash, updatedBank)
-        cash = updatedCash
-        bank = updatedBank
-    end)
-end
+RegisterNetEvent('hud:client:ShowAccounts', function(type, amount)
+    if type == 'cash' then
+        SendNUIMessage({
+            action = 'show',
+            type = 'cash',
+            cash = amount
+        })
+    else
+        SendNUIMessage({
+            action = 'show',
+            type = 'bank',
+            bank = amount
+        })
+    end
+end)
+
+RegisterNetEvent('hud:client:OnMoneyChange', function(type, amount, isMinus)
+    cashAmount = PlayerData.money['cash']
+    bankAmount = PlayerData.money['bank']
+    SendNUIMessage({
+        action = 'updatemoney',
+        cash = cashAmount,
+        bank = bankAmount,
+        amount = amount,
+        minus = isMinus,
+        type = type
+    })
+end)
 
 if config.enableAopStatus then
     RegisterNetEvent("AndyHUD:ChangeAOP")
@@ -260,8 +266,8 @@ CreateThread(function()
         if config.enableMoneyHud then
             text("💵", 0.885, 0.028, 0.35, 7)
             text("💳", 0.885, 0.068, 0.35, 7)
-            text("~g~$~w~".. cash, 0.91, 0.03, 0.55, 7)
-            text("~b~$~w~".. bank, 0.91, 0.07, 0.55, 7)
+            text(cashAmount, 0.91, 0.03, 0.55, 7 .. "~g~Kc~w~")
+            text(bankAmount, 0.91, 0.07, 0.55, 7 .. "~b~Kc~w~")
         end
         if not hidden then
             if config.enableAopStatus then
