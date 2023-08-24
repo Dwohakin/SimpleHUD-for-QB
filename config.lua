@@ -3,17 +3,17 @@
 config = {
     enableMoneyHud = true, -- curerntly only used with ND Framework if you use another fw then you can edit the client.lua, or if you're using the Currency_System then turn this off.
     enableFuelHUD = true,
-    enableSpeedometerMetric = false,
+    enableSpeedometerMetric = true,
     enablePostals = true, -- paste your postal into postals.json file.
 
     enableAopStatus = true,
-    defaultAopStatus = "Sandy Shores",
+    defaultAopStatus = "Celá mapa",
     changeAopAccess = { -- discord roles that can use the /aop command to change the aop. Usually only staff is allowed but if you want to allow everyone just put a "0".
         "0"
     },
 
     enablePriorityStatus = true,
-    cooldownAfterPriorityStops = 5, -- in minutes, how long will the priority cooldown be after one stops until a new priority can be started.
+    cooldownAfterPriorityStops =10, -- in minutes, how long will the priority cooldown be after one stops until a new priority can be started.
     cooldownAccess = { -- discord roles that can use the /prio-cd command to add a cooldown. Usually only staff is allowed but if you want to allow everyone just put a "0".
         "0"
     },
